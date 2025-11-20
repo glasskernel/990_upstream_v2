@@ -695,8 +695,6 @@ static void fvmap_copy_from_sram(void __iomem *map_base, void __iomem *sram_base
 
 		old = sram_base + fvmap_header[i].o_ratevolt;
 		new = map_base + fvmap_header[i].o_ratevolt;
-		
-		optimize_rate_volt_table(old, fvmap_header[i].num_of_lv);
 
 		check_percent_margin(old, fvmap_header[i].num_of_lv);
 
