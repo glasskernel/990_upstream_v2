@@ -654,7 +654,7 @@ static inline ssize_t print_fvmap(char *buf, int start, int end)
 
 static void fvmap_copy_from_sram(void __iomem *map_base, void __iomem *sram_base)
 {
-	volatile struct fvmap_header *fvmap_header, *header;
+	struct fvmap_header *fvmap_header, *header;
 	struct rate_volt_header *old, *new;
 	struct clocks *clks;
 	struct pll_header *plls;
