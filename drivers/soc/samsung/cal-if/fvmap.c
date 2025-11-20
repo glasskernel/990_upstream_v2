@@ -567,10 +567,10 @@ __ATTR(domain##_grp_volt, 0400, show_asv_g_spec_##domain##_grp_volt, NULL)
 	&asv_g_spec_##domain##_fused_volt.attr,							\
 	&asv_g_spec_##domain##_grp_volt.attr
 
-asv_g_spec(cpucl0, 2);
-asv_g_spec(cpucl1, 3);
-asv_g_spec(cpucl2, 4);
-asv_g_spec(g3d, 5);
+asv_g_spec(cpucl0, 0);
+asv_g_spec(cpucl1, 1);
+asv_g_spec(cpucl2, 2);
+asv_g_spec(g3d, 3);
 
 static struct attribute *asv_g_spec_attrs[] = {
 	asv_g_spec_attr(cpucl0),
