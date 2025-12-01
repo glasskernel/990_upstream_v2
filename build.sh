@@ -14,10 +14,11 @@ unset_flags()
     cat << EOF
 Usage: $(basename "$0") [options]
 Options:
-    -m, --model [value]    Specify the model code of the phone
-    -k, --ksu [y/N]        Include KernelSU
-    -r, --recovery [y/N]   Compile kernel for an Android Recovery
-    -d, --dtbs [y/N]	   Compile only DTBs
+    -m, --model [value]      Specify the model code of the phone
+    -k, --ksu [y/N]          Include KernelSU
+    -n, --nethunter [y/N]    Include NetHunter Support
+    -r, --recovery [y/N]     Compile kernel for an Android Recovery
+    -d, --dtbs [y/N]         Compile only DTBs
 EOF
 }
 
@@ -29,6 +30,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ksu|-k)
             KSU_OPTION="$2"
+            shift 2
+            ;;
+        --nethunter|-n)
+            NH_OPTION="$2"
             shift 2
             ;;
         --recovery|-r)
@@ -118,6 +123,7 @@ esac
 if [[ "$RECOVERY_OPTION" == "y" ]]; then
     RECOVERY=recovery.config
     KSU_OPTION=n
+    NH_OPTION=n
 fi
 
 if [ -z $KSU_OPTION ]; then
@@ -126,6 +132,15 @@ fi
 
 if [[ "$KSU_OPTION" == "y" ]]; then
     KSU=ksu.config
+fi
+
+# NetHunter Logic
+if [ -z $NH_OPTION ]; then
+    read -p "Include NetHunter (y/N): " NH_OPTION
+fi
+
+if [[ "$NH_OPTION" == "y" ]]; then
+    NH=nh.config
 fi
 
 if [[ "$DTB_OPTION" == "y" ]]; then
@@ -142,7 +157,12 @@ echo "Defconfig: "$KERNEL_DEFCONFIG""
 if [ -z "$KSU" ]; then
     echo "KSU: N"
 else
-    echo "KSU: $KSU"
+    echo "KSU: Y"
+fi
+if [ -z "$NH" ]; then
+    echo "NetHunter: N"
+else
+    echo "NetHunter: Y"
 fi
 if [ -z "$RECOVERY" ]; then
     echo "Recovery: N"
@@ -158,7 +178,9 @@ else
 fi
 echo "Generating configuration file..."
 echo "-----------------------------------------------"
-make ${MAKE_ARGS} -j$CORES exynos9830_defconfig $MODEL.config $KSU $RECOVERY || abort
+
+# Merging configs including NetHunter ($NH)
+make ${MAKE_ARGS} -j$CORES exynos9830_defconfig $MODEL.config $KSU $NH $RECOVERY || abort
 
 if [ ! -z "$DTBS" ]; then
     MAKE_ARGS="$MAKE_ARGS dtbs"
@@ -235,11 +257,17 @@ if [ -z "$RECOVERY" ] && [ -z "$DTBS" ]; then
     pushd build/out/$MODEL/zip > /dev/null
     DATE=`date +"%d-%m-%Y_%H-%M-%S"`
 
+    # Construct name based on features
+    NAME_SUFFIX=""
     if [[ "$KSU_OPTION" == "y" ]]; then
-        NAME="$version"_"$MODEL"_UNOFFICIAL_KSU_"$DATE".zip
-    else
-        NAME="$version"_"$MODEL"_UNOFFICIAL_"$DATE".zip
+        NAME_SUFFIX="${NAME_SUFFIX}_KSU"
     fi
+    if [[ "$NH_OPTION" == "y" ]]; then
+        NAME_SUFFIX="${NAME_SUFFIX}_NetHunter"
+    fi
+    
+    NAME="$version"_"$MODEL"_UNOFFICIAL${NAME_SUFFIX}_"$DATE".zip
+    
     zip -r -qq ../"$NAME" .
     popd > /dev/null
 fi
